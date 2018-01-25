@@ -21,10 +21,10 @@ tmp_aspprog = 'asp_out.txt'
 tmp_posprog = 'tmp_posprog.lpmln'
 lr = 0.1
 numExecutionXorCount = 10
-max_iteration = 50
+max_iteration = 1
 max_mcsat_iteration = 50
 stopping_diff = 0.005
-init_weight = -1
+init_weight = 0
 numUnsat = {}
 mis = {}
 total_mis = {}
@@ -73,7 +73,7 @@ def updateWithWeightPlaceHolders(program, out, rule_idx):
 def getSampleFromText(txt):
 	#print txt
 	whole_model = []
-	if 'UNSATISFIABLE' in txt:
+	if 'UNSATISFIABLE' in txt or "UNKNOWN" in txt:
 		return None
 	answers = txt.split('Answer: 1')[1]
 	answers = answers.split('Optimization:')[0]
