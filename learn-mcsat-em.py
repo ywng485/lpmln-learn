@@ -5,6 +5,7 @@ import sympy
 import subprocess
 import os
 import os.path
+import time
 
 weights = {}
 weight_sum = {}
@@ -21,13 +22,14 @@ tmp_aspprog = 'asp_out.txt'
 tmp_posprog = 'tmp_posprog.lpmln'
 lr = 0.1
 numExecutionXorCount = 10
-max_iteration = 1
+max_iteration = 3
 max_mcsat_iteration = 50
 stopping_diff = 0.005
 init_weight = 0
 numUnsat = {}
 mis = {}
 total_mis = {}
+log_file_name = 'log.txt'
 
 class gringoFun:
 	def __init__(self, atom_name, atom_args):
@@ -199,10 +201,11 @@ for idx in rule_idx:
 	weight_sum[idx] = 0
 
 random.seed()
-for fn in [tmp_weights_file, tmp_sat_const_file, tmp_posprog, tmp_aspprog, tmp_lpmln2cl_file, tmp_lpmln2cl_file + '.cl']:
+for fn in [tmp_weights_file, tmp_sat_const_file, tmp_posprog, tmp_aspprog, tmp_lpmln2cl_file, tmp_lpmln2cl_file + '.cl', log_file_name]:
 	if os.path.isfile(fn):
 		os.remove(fn)
 
+log_file = open(log_file_name, 'w')
 pickle.dump(weights, open(tmp_weights_file, 'w'))
 # Prepare input program
 updateWithWeightPlaceHolders(program, program + '.weights', rule_idx)
@@ -219,6 +222,7 @@ if 'UNSATISFIABLE' in out:
 
 # Begin: Learning Iterations
 actualNumIteration = 0
+start_time = time.time()
 for iter_count in range(max_iteration):
 	actualNumIteration += 1
 	print '============ Iteration ' + str(iter_count) + ' ============'
@@ -266,7 +270,7 @@ for iter_count in range(max_iteration):
 			max_diff = abs(weights[rule_id] - prev_weights[rule_id])
 
 	print "max_diff", max_diff
-
+	log_file.write(str(actualNumIteration) + ',' + str(max_diff) + ',' + str(time.time() - start_time) + '\n')
 	if max_diff <= stopping_diff:
 		break
 
@@ -278,3 +282,4 @@ for rule_id in rule_idx:
 	outfile.write(str(rule_id) + ':' + str(weight_sum[rule_id]/actualNumIteration))
 os.remove(tmp_weights_file)
 # End: Store and save new weights
+log_file.close()
