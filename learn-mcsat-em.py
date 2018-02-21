@@ -11,7 +11,8 @@ weights = {}
 weight_sum = {}
 lpmlncompiler = 'code/lpmlncompiler'
 clingo3to4 = 'code/clingo3to4'
-SMSample_script = 'code/clingoXOR-Count.py '
+SMSample_script = 'code/xorro/xorro.py '
+#SMSample_script = 'code/clingoXOR-Count.py '
 #SMSample_script = 'code/XOR-countncheck.py '
 #SMSample_script = 'code/XOR-countncheck-faster.py '
 tmp_sat_const_file = 'sat_const.lp'
@@ -22,10 +23,10 @@ tmp_aspprog = 'asp_out.txt'
 tmp_posprog = 'tmp_posprog.lpmln'
 lr = 0.1
 numExecutionXorCount = 10
-max_iteration = 3
+max_iteration = 50
 max_mcsat_iteration = 50
-stopping_diff = 0.005
-init_weight = 0
+stopping_diff = 0.001
+init_weight = -1
 numUnsat = {}
 mis = {}
 total_mis = {}
@@ -159,7 +160,7 @@ def findTotalMisWithMCSAT(total_mis, program):
 		create_constraint_file(M, tmp_sat_const_file)
 
 		# Generate next sample
-		cmd = 'clingo5 ' + SMSample_script +  ' -c s=0 ' + program + ' ' + tmp_sat_const_file + ' 1'
+		cmd = 'python ' + SMSample_script +  ' ' + program + ' ' + tmp_sat_const_file + ' 1'
 		out = ''
 		print 'command:', cmd
 		for _ in range(numExecutionXorCount):
@@ -247,15 +248,17 @@ for iter_count in range(max_iteration):
 
 	numUnsat, sample_count1 = findTotalMisWithMCSAT(numUnsat, tmp_aspprog + '.cl ' + evidence)
 	total_mis, sample_count2 = findTotalMisWithMCSAT(total_mis, tmp_aspprog + '.cl')
-
+	
 	# End: Single learning iteration
 	# Compute new weights
+	total_gradient = 0
 	for idx in weights:
 		print 'Rule', idx
 		print '# False ground instances from Evidence', float(numUnsat[idx])/float(sample_count1)
 		print 'Expected # false ground instances', float(total_mis[idx])/float(sample_count2)
 		prob_gradient = -numUnsat[idx]/sample_count1 + float(total_mis[idx])/float(sample_count2)
 		print 'Gradient', prob_gradient
+		total_gradient += abs(prob_gradient)
 		weights[idx] += lr * prob_gradient
 		print 'New weight ', idx, ':', weights[idx]
 
@@ -270,7 +273,8 @@ for iter_count in range(max_iteration):
 			max_diff = abs(weights[rule_id] - prev_weights[rule_id])
 
 	print "max_diff", max_diff
-	log_file.write(str(actualNumIteration) + ',' + str(max_diff) + ',' + str(time.time() - start_time) + '\n')
+	if actualNumIteration % 10 == 0:
+		log_file.write(str(actualNumIteration) + ',' + str(max_diff) + ',' + str(total_gradient) + ',' + str(time.time() - start_time) + '\n')
 	if max_diff <= stopping_diff:
 		break
 
