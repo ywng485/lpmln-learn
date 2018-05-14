@@ -7,4 +7,4 @@ The language LPMLN is an extension of Answer Set Programming (ASP) where each AS
 The system relies on xorro, a uniform sampler for ASP programs, available here: https://github.com/flavioeverardo/xorro/
 (Please copy the all xorro files to code/xorro under lpmln-learn folder)
 
-For usage of the system, see https://lpmln-learn.weebly.com/uploads/7/9/0/9/7909467/usage.pdf
+System manual, tutorial and examples are available at https://lpmln-learn.weebly.com/.
