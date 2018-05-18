@@ -1,4 +1,4 @@
-# lpmln-learning
+# lpmln-learn
 
 The LPMLN learning system is a tool for weight learning in LPMLN programs. It is a collection of Python scripts that execute gradient ascent based learning with a MC-SAT like sampling method called MC-ASP, based on Clingo and lpmln2asp.
 
